@@ -74,6 +74,8 @@ definitions:
         type: string
       destination:
         type: string
+      earliestDepartureTime:
+        type: string
       origin:
         type: string
     required:
@@ -164,9 +166,10 @@ paths:
       consumes:
       - application/json
       description: Calculates the best routes and departure times based on multiple
-        factors including delays, weather, and crowding
+        factors including delays, weather, and crowding. Optionally specify the earliest
+        time you can leave.
       parameters:
-      - description: Route calculation request
+      - description: Route calculation request with optional earliest departure time
         in: body
         name: request
         required: true

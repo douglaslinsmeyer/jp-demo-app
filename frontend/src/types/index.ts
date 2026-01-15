@@ -2,6 +2,7 @@ export interface RouteRequest {
   origin: string;
   destination: string;
   departureTime?: Date;
+  earliestDepartureTime?: Date;
 }
 
 export interface RouteResponse {

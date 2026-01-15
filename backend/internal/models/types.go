@@ -4,9 +4,10 @@ import "time"
 
 // RouteRequest represents the request payload for route calculation
 type RouteRequest struct {
-	Origin        string     `json:"origin" binding:"required"`
-	Destination   string     `json:"destination" binding:"required"`
-	DepartureTime *time.Time `json:"departureTime,omitempty"`
+	Origin                string     `json:"origin" binding:"required"`
+	Destination           string     `json:"destination" binding:"required"`
+	DepartureTime         *time.Time `json:"departureTime,omitempty"`
+	EarliestDepartureTime *time.Time `json:"earliestDepartureTime,omitempty"`
 }
 
 // RouteResponse represents the response containing route options

@@ -37,11 +37,11 @@ func HealthCheck(c *gin.Context) {
 
 // CalculateRoute godoc
 // @Summary Calculate optimized routes
-// @Description Calculates the best routes and departure times based on multiple factors including delays, weather, and crowding
+// @Description Calculates the best routes and departure times based on multiple factors including delays, weather, and crowding. Optionally specify the earliest time you can leave.
 // @Tags routes
 // @Accept json
 // @Produce json
-// @Param request body models.RouteRequest true "Route calculation request"
+// @Param request body models.RouteRequest true "Route calculation request with optional earliest departure time"
 // @Success 200 {object} models.RouteResponse
 // @Failure 400 {object} models.ErrorResponse
 // @Failure 500 {object} models.ErrorResponse
@@ -59,7 +59,7 @@ func CalculateRoute(c *gin.Context) {
 	}
 
 	// Calculate optimized routes
-	response, err := optimizerService.OptimizeRoutes(req.Origin, req.Destination, req.DepartureTime)
+	response, err := optimizerService.OptimizeRoutes(req.Origin, req.Destination, req.DepartureTime, req.EarliestDepartureTime)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, models.ErrorResponse{
 			Error:   "Failed to calculate routes",

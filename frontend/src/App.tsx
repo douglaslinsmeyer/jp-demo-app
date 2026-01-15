@@ -10,9 +10,25 @@ function App() {
   const [routeData, setRouteData] = useState<RouteResponse | null>(null);
   const calculateRoute = useRouteCalculation();
 
-  const handleCalculate = (origin: string, destination: string) => {
+  const handleCalculate = (origin: string, destination: string, earliestTime?: string) => {
+    // Convert earliestTime (HH:MM) to Date object if provided
+    let earliestDepartureTime: Date | undefined;
+    if (earliestTime) {
+      const now = new Date();
+      const [hours, minutes] = earliestTime.split(':').map(Number);
+      earliestDepartureTime = new Date(now);
+      earliestDepartureTime.setHours(hours, minutes, 0, 0);
+
+      // If the time is earlier than now, assume it's for today
+      // (User might set 6:00 PM when it's already 7:00 PM, so we keep it as is)
+    }
+
     calculateRoute.mutate(
-      { origin, destination },
+      {
+        origin,
+        destination,
+        earliestDepartureTime
+      },
       {
         onSuccess: (data) => {
           setRouteData(data);

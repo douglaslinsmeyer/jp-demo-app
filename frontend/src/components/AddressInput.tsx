@@ -1,18 +1,19 @@
 import { useState } from 'react';
 
 interface AddressInputProps {
-  onCalculate: (origin: string, destination: string) => void;
+  onCalculate: (origin: string, destination: string, earliestTime?: string) => void;
   isLoading: boolean;
 }
 
 export default function AddressInput({ onCalculate, isLoading }: AddressInputProps) {
   const [origin, setOrigin] = useState('');
   const [destination, setDestination] = useState('');
+  const [earliestTime, setEarliestTime] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (origin.trim() && destination.trim()) {
-      onCalculate(origin, destination);
+      onCalculate(origin, destination, earliestTime || undefined);
     }
   };
 
@@ -20,6 +21,12 @@ export default function AddressInput({ onCalculate, isLoading }: AddressInputPro
     const temp = origin;
     setOrigin(destination);
     setDestination(temp);
+  };
+
+  // Get current time in HH:MM format for default
+  const getCurrentTime = () => {
+    const now = new Date();
+    return now.toTimeString().slice(0, 5);
   };
 
   return (
@@ -85,6 +92,24 @@ export default function AddressInput({ onCalculate, isLoading }: AddressInputPro
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               disabled={isLoading}
             />
+          </div>
+
+          {/* Earliest Departure Time */}
+          <div>
+            <label htmlFor="earliestTime" className="block text-sm font-medium text-gray-700 mb-2">
+              Earliest I Can Leave (Optional)
+            </label>
+            <input
+              type="time"
+              id="earliestTime"
+              value={earliestTime}
+              onChange={(e) => setEarliestTime(e.target.value)}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              disabled={isLoading}
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              Leave blank to find the best time starting now
+            </p>
           </div>
 
           {/* Calculate Button */}

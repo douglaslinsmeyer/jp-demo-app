@@ -27,11 +27,16 @@ func NewOptimizerService() *OptimizerService {
 }
 
 // OptimizeRoutes calculates and optimizes routes based on all factors
-func (s *OptimizerService) OptimizeRoutes(origin, destination string, departureTime *time.Time) (*models.RouteResponse, error) {
+func (s *OptimizerService) OptimizeRoutes(origin, destination string, departureTime *time.Time, earliestDepartureTime *time.Time) (*models.RouteResponse, error) {
 	// Use current time if not specified
 	if departureTime == nil {
 		now := time.Now()
 		departureTime = &now
+	}
+
+	// Ensure departure time is not before earliest time
+	if earliestDepartureTime != nil && departureTime.Before(*earliestDepartureTime) {
+		departureTime = earliestDepartureTime
 	}
 
 	// Fetch all data in parallel
@@ -94,7 +99,7 @@ func (s *OptimizerService) OptimizeRoutes(origin, destination string, departureT
 	}
 
 	// Find optimal departure time by testing multiple times
-	optimalTime := s.findOptimalDepartureTime(origin, destination, *departureTime, delays, weather)
+	optimalTime := s.findOptimalDepartureTime(origin, destination, *departureTime, earliestDepartureTime, delays, weather)
 
 	// Sort routes by score
 	s.sortRoutesByScore(routes)
@@ -229,7 +234,7 @@ func (s *OptimizerService) calculateTransferPenalty(route *models.Route) int {
 }
 
 // findOptimalDepartureTime finds the best time to leave by testing multiple options
-func (s *OptimizerService) findOptimalDepartureTime(origin, destination string, baseTime time.Time, delays []models.DelayInfo, weather *models.WeatherInfo) time.Time {
+func (s *OptimizerService) findOptimalDepartureTime(origin, destination string, baseTime time.Time, earliestDepartureTime *time.Time, delays []models.DelayInfo, weather *models.WeatherInfo) time.Time {
 	// Test departure times: now, +15, +30, +45, +60 minutes
 	testTimes := []time.Duration{0, 15, 30, 45, 60}
 
@@ -238,6 +243,11 @@ func (s *OptimizerService) findOptimalDepartureTime(origin, destination string, 
 
 	for _, offset := range testTimes {
 		testTime := baseTime.Add(offset * time.Minute)
+
+		// Skip if before earliest departure time
+		if earliestDepartureTime != nil && testTime.Before(*earliestDepartureTime) {
+			continue
+		}
 
 		// Get routes for this time
 		routes, err := s.googleMaps.GetRoutes(origin, destination, &testTime)

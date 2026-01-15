@@ -19,7 +19,7 @@ const docTemplate = `{
     "paths": {
         "/api/calculate-route": {
             "post": {
-                "description": "Calculates the best routes and departure times based on multiple factors including delays, weather, and crowding",
+                "description": "Calculates the best routes and departure times based on multiple factors including delays, weather, and crowding. Optionally specify the earliest time you can leave.",
                 "consumes": [
                     "application/json"
                 ],
@@ -32,7 +32,7 @@ const docTemplate = `{
                 "summary": "Calculate optimized routes",
                 "parameters": [
                     {
-                        "description": "Route calculation request",
+                        "description": "Route calculation request with optional earliest departure time",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -255,6 +255,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "destination": {
+                    "type": "string"
+                },
+                "earliestDepartureTime": {
                     "type": "string"
                 },
                 "origin": {
