@@ -1,0 +1,24 @@
+# Development Dockerfile for Go backend
+FROM golang:1.25-alpine
+
+WORKDIR /app
+
+# Install air for hot reloading and swag for Swagger docs
+RUN go install github.com/air-verse/air@latest && \
+    go install github.com/swaggo/swag/cmd/swag@latest
+
+# Copy go mod files
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Copy source code
+COPY . .
+
+# Generate Swagger documentation
+RUN swag init -g cmd/api/main.go
+
+# Expose port
+EXPOSE 3000
+
+# Use air for hot reloading in development
+CMD ["air", "-c", ".air.toml"]

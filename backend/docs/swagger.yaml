@@ -1,0 +1,246 @@
+basePath: /
+definitions:
+  models.CrowdingInfo:
+    properties:
+      description:
+        type: string
+      level:
+        description: '"LOW", "MODERATE", "HIGH", "VERY_HIGH"'
+        type: string
+    type: object
+  models.DelayInfo:
+    properties:
+      delayMinutes:
+        type: integer
+      lineName:
+        type: string
+      message:
+        type: string
+      status:
+        description: '"NORMAL", "DELAYED", "SUSPENDED"'
+        type: string
+    type: object
+  models.ErrorResponse:
+    properties:
+      code:
+        type: integer
+      error:
+        type: string
+      message:
+        type: string
+    type: object
+  models.FactorInfo:
+    properties:
+      crowdingEstimate:
+        $ref: '#/definitions/models.CrowdingInfo'
+      delays:
+        items:
+          $ref: '#/definitions/models.DelayInfo'
+        type: array
+      weather:
+        $ref: '#/definitions/models.WeatherInfo'
+    type: object
+  models.LineInfo:
+    properties:
+      color:
+        type: string
+      name:
+        type: string
+      shortName:
+        type: string
+      vehicle:
+        description: '"SUBWAY", "TRAIN", "BUS"'
+        type: string
+    type: object
+  models.Route:
+    properties:
+      breakdown:
+        $ref: '#/definitions/models.TimeBreakdown'
+      score:
+        type: number
+      steps:
+        items:
+          $ref: '#/definitions/models.RouteStep'
+        type: array
+      summary:
+        type: string
+      totalTime:
+        description: in seconds
+        type: integer
+    type: object
+  models.RouteRequest:
+    properties:
+      departureTime:
+        type: string
+      destination:
+        type: string
+      origin:
+        type: string
+    required:
+    - destination
+    - origin
+    type: object
+  models.RouteResponse:
+    properties:
+      factors:
+        $ref: '#/definitions/models.FactorInfo'
+      optimalDepartureTime:
+        type: string
+      routes:
+        items:
+          $ref: '#/definitions/models.Route'
+        type: array
+    type: object
+  models.RouteStep:
+    properties:
+      arriveAt:
+        description: for TRANSIT steps
+        type: string
+      departAt:
+        description: for TRANSIT steps
+        type: string
+      distance:
+        description: in meters
+        type: integer
+      duration:
+        description: in seconds
+        type: integer
+      instructions:
+        type: string
+      line:
+        allOf:
+        - $ref: '#/definitions/models.LineInfo'
+        description: for TRANSIT steps
+      type:
+        description: '"WALK", "TRANSIT", "WAIT"'
+        type: string
+    type: object
+  models.TimeBreakdown:
+    properties:
+      crowdingPenalty:
+        description: in seconds
+        type: integer
+      delayPenalty:
+        description: in seconds
+        type: integer
+      transitTime:
+        description: in seconds
+        type: integer
+      waitingTime:
+        description: in seconds
+        type: integer
+      walkingTime:
+        description: in seconds
+        type: integer
+      weatherPenalty:
+        description: in seconds
+        type: integer
+    type: object
+  models.WeatherInfo:
+    properties:
+      condition:
+        description: '"CLEAR", "RAIN", "SNOW", etc.'
+        type: string
+      lastUpdated:
+        type: string
+      precipitation:
+        description: in mm/hour
+        type: number
+      temperature:
+        description: in Celsius
+        type: number
+    type: object
+host: localhost:3000
+info:
+  contact:
+    name: API Support
+  description: API for optimizing Tokyo commute times based on real-time transit,
+    weather, and crowding data
+  title: Tokyo Commute Optimizer API
+  version: "1.0"
+paths:
+  /api/calculate-route:
+    post:
+      consumes:
+      - application/json
+      description: Calculates the best routes and departure times based on multiple
+        factors including delays, weather, and crowding
+      parameters:
+      - description: Route calculation request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.RouteRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.RouteResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Calculate optimized routes
+      tags:
+      - routes
+  /api/delays:
+    get:
+      description: Returns current delay information for Tokyo trains from ODPT API
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: delays
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Get current train delays
+      tags:
+      - transit
+  /api/weather:
+    get:
+      description: Returns current weather conditions in Tokyo from Open-Meteo JMA
+        API
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.WeatherInfo'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Get current weather
+      tags:
+      - weather
+  /health:
+    get:
+      description: Returns the health status of the API
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Health check
+      tags:
+      - system
+schemes:
+- http
+swagger: "2.0"
